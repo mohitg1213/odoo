@@ -19,8 +19,9 @@
 
 {
     'name': 'Guatemala - Accounting',
+    'icon': '/base/static/img/country_flags/gt.png',
     'version': '3.0',
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     'description': """
 This is the base module to manage the accounting chart for Guatemala.
 =====================================================================
@@ -33,8 +34,12 @@ taxes and the Quetzal currency.""",
     'depends': ['base', 'account'],
     'data': [
         'data/l10n_gt_chart_data.xml',
+        'data/account.account.template.csv',
+        'data/l10n_gt_chart_post_data.xml',
         'data/account_data.xml',
         'data/account_chart_template_data.xml',
-        'data/account_chart_template_data.yml',
+    ],
+    'demo': [
+        'demo/demo_company.xml',
     ],
 }

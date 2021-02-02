@@ -122,7 +122,7 @@ define([
       } else {
         // ODOO: editor on [data-note-id] attribute
         // $editor = $('#note-editor-' + list.last($target.attr('id').split('-')));
-        $editor = $('[data-note-id="' + list.last($target.attr('id')) + '"]');
+        $editor = $('[data-note-id="' + list.last($target.attr('id').split('-')) + '"]');
       }
 
       return buildLayoutInfo($editor);
@@ -283,10 +283,10 @@ define([
 
       if (len === 0) {
         return true;
-      } else if (!isText(node) && len === 1 && node.innerHTML === blankHTML) {
+      } else if (!isText(node) && len === 1 && blankHTML === node.innerHTML) {
         // ex) <p><br></p>, <span><br></span>
         return true;
-      } else if (list.all(node.childNodes, isText) && node.innerHTML === '') {
+      } else if (list.all(node.childNodes, isText) && '' === node.innerHTML) {
         // ex) <p></p>, <span></span>
         return true;
       }
@@ -299,7 +299,7 @@ define([
      */
     var paddingBlankHTML = function (node) {
       if (!isVoid(node) && !nodeLength(node)) {
-        node.innerHTML = blankHTML;
+        $(node).html(blankHTML);
       }
     };
 

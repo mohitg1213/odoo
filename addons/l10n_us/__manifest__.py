@@ -3,8 +3,9 @@
 
 {
     'name': 'United States - Accounting',
+    'icon': '/base/static/img/country_flags/us.png',
     'version': '1.1',
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     'description': """
 United States - Chart of accounts.
 ==================================

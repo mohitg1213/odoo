@@ -16,11 +16,16 @@
         </t>
     </div>
 
-    <t t-extend="DashboardApps">
-        <t t-jquery=".o_web_settings_dashboard_pills" t-operation="append">
-            <a class="pull-right" t-att-href="widget.data.url" target="_blank">
-            <i class="fa fa-money fa-2x text-muted"/> In-App Purchases</a>
+    <t t-extend="DashboardMain">
+        <t t-jquery=".o_web_settings_apps" t-operation="after">
+            <div class="o_web_settings_iap"></div>
         </t>
     </t>
-
+    
+    <div t-name="iap.buy_more_credits" class="mt-2 row">
+        <div class="col-sm">
+            <button class="btn btn-link buy_credits px-0"><i class="fa fa-arrow-right"/> Buy credits</button><br/>
+            <button class="btn btn-link o_iap_view_my_services px-0"><i class="fa fa-arrow-right mr-1"/>View My Services</button>
+        </div>
+    </div>
 </template>

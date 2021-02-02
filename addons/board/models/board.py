@@ -2,7 +2,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, models
-from odoo.tools import pycompat
 
 
 class Board(models.AbstractModel):
@@ -10,8 +9,8 @@ class Board(models.AbstractModel):
     _description = "Board"
     _auto = False
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         return self
 
     @api.model
@@ -46,4 +45,7 @@ class Board(models.AbstractModel):
             return node
 
         archnode = etree.fromstring(arch)
+        # add the js_class 'board' on the fly to force the webclient to
+        # instantiate a BoardView instead of FormView
+        archnode.set('js_class', 'board')
         return etree.tostring(remove_unauthorized_children(archnode), pretty_print=True, encoding='unicode')

@@ -4,13 +4,13 @@
 
 {
     'name': 'pos_sale',
-    'version': '1.0',
+    'version': '1.1',
     'category': 'Hidden',
     'sequence': 6,
     'summary': 'Link module between Point of Sale and Sales',
     'description': """
 
-This module adds a custom Sales Channel for the point of sale to be able to view and manage your point of sale sales with more ease.
+This module adds a custom Sales Team for the Point of Sale. This enables you to view and manage your point of sale sales with more ease.
 """,
     'depends': ['point_of_sale', 'sale_management'],
     'data': [

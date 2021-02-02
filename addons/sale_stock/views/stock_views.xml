@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <template id="assets_backend" inherit_id="web.assets_backend">
-            <xpath expr="//script[last()]" position="after">
-                <script type="text/javascript" src="/sale_stock/static/src/js/tour.js"></script>
-            </xpath>
-        </template>
-
         <menuitem id="menu_aftersale" name="After-Sale"
             groups="sales_team.group_sale_salesman"
             parent="sale.sale_menu_root" sequence="5" />
@@ -39,8 +33,15 @@
             <field name="arch" type="xml">
                 <button name="action_view_orderpoints" position="after">
                     <button class="oe_stat_button" name="action_view_sales"
-                        type="object" icon="fa-usd" attrs="{'invisible': [('sale_ok', '=', False)]}">
-                        <field string="Sales" name="sales_count" widget="statinfo" />
+                        type="object" icon="fa-signal" attrs="{'invisible': [('sale_ok', '=', False)]}"
+                        groups="sales_team.group_sale_salesman" help="Sold in the last 365 days">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="sales_count" widget="statinfo" nolabel="1" class="mr4"/>
+                                <field name="uom_name"/>
+                            </span>
+                            <span class="o_stat_text">Sold</span>
+                        </div>
                     </button>
                 </button>
             </field>

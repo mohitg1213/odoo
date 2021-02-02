@@ -6,13 +6,14 @@ from odoo import api, fields, models
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    event_ok = fields.Boolean(string='Is an Event Ticket', help='Determine if a product needs '
-      'to create automatically an event registration at the confirmation of a sales order line.')
+    event_ok = fields.Boolean(string='Is an Event Ticket', help="If checked this product automatically "
+      "creates an event registration at the sales order confirmation.")
 
     @api.onchange('event_ok')
     def _onchange_event_ok(self):
         if self.event_ok:
             self.type = 'service'
+            self.invoice_policy = 'order'
 
 
 class Product(models.Model):
@@ -25,3 +26,4 @@ class Product(models.Model):
         """ Redirection, inheritance mechanism hides the method on the model """
         if self.event_ok:
             self.type = 'service'
+            self.invoice_policy = 'order'

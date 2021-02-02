@@ -5,6 +5,7 @@
 
 {
     "name": "Panama - Accounting",
+    'icon': '/base/static/img/country_flags/pa.png',
     "description": """
 Panamenian accounting chart and tax localization.
 
@@ -15,13 +16,12 @@ Con la Colaboración de
 
     """,
     "author": "Cubic ERP",
-    "website": "http://cubicERP.com",
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     "depends": ["account"],
     "data": [
         "data/l10n_pa_chart_data.xml",
         "data/account_data.xml",
         "data/account_tax_data.xml",
-        "data/account_chart_template_data.yml",
+        "data/account_chart_template_data.xml",
     ],
 }

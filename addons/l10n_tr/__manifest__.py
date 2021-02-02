@@ -3,8 +3,9 @@
 
 {
     'name': 'Turkey - Accounting',
+    'icon': '/base/static/img/country_flags/tr.png',
     'version': '1.0',
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     'description': """
 Türkiye için Tek düzen hesap planı şablonu Odoo Modülü.
 ==========================================================
@@ -13,16 +14,20 @@ Bu modül kurulduktan sonra, Muhasebe yapılandırma sihirbazı çalışır
     * Sihirbaz sizden hesap planı şablonu, planın kurulacağı şirket, banka hesap
       bilgileriniz, ilgili para birimi gibi bilgiler isteyecek.
     """,
-    'author': 'Ahmet Altınışık',
-    'maintainer':'https://launchpad.net/~openerp-turkey',
-    'website':'https://launchpad.net/openerp-turkey',
+    'author': 'Ahmet Altınışık, Can Tecim',
+    'maintainer':'https://launchpad.net/~openerp-turkey, http://www.cantecim.com',
     'depends': [
         'account',
     ],
     'data': [
         'data/l10n_tr_chart_data.xml',
+        'data/account.account.template.csv',
+        'data/l10n_tr_chart_post_data.xml',
         'data/account_data.xml',
         'data/account_tax_template_data.xml',
-        'data/account_chart_template_data.yml',
+        'data/account_chart_template_data.xml',
+    ],
+    'demo': [
+        'demo/demo_company.xml',
     ],
 }

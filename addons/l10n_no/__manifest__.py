@@ -3,9 +3,10 @@
 
 {
     "name" : "Norway - Accounting",
+    'icon': '/base/static/img/country_flags/no.png',
     "version" : "2.0",
     "author" : "Rolv Råen",
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     "description": """This is the module to manage the accounting chart for Norway in Odoo.
 
 Updated for Odoo 9 by Bringsvor Consulting AS <www.bringsvor.com>
@@ -17,7 +18,13 @@ Updated for Odoo 9 by Bringsvor Consulting AS <www.bringsvor.com>
     ],
     "data": ['data/l10n_no_chart_data.xml',
              'data/account_data.xml',
+             'data/account_tax_report_data.xml',
+             'data/account.account.template.csv',
              'data/account_tax_data.xml',
-             'data/account_chart_template_data.yml'],
-    "active": False,
+             'data/account_chart_template_data.xml',
+             ],
+     'demo': [
+         'demo/demo_company.xml',
+     ],
+    'post_init_hook': '_preserve_tag_on_taxes',
 }

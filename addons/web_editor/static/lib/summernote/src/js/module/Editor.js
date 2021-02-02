@@ -520,7 +520,7 @@ define([
         // [workaround] added styled bogus span for style
         //  - also bogus character needed for cursor position
         if (firstSpan && !dom.nodeLength(firstSpan)) {
-          firstSpan.innerHTML = dom.ZERO_WIDTH_NBSP_CHAR;
+          $(firstSpan).html(dom.ZERO_WIDTH_NBSP_CHAR);
           range.createFromNodeAfter(firstSpan.firstChild).select();
           $editable.data(KEY_BOGUS, firstSpan);
         }
@@ -628,9 +628,9 @@ define([
       }
 
       var anchors = [];
-      // ODOO: adding this branch to modify existing anchor
+      // ODOO: adding this branch to modify existing anchor if it fully contains the range
       var ancestor_anchor = dom.ancestor(rng.sc, dom.isAnchor);
-      if(ancestor_anchor) {
+      if(ancestor_anchor && ancestor_anchor === dom.ancestor(rng.ec, dom.isAnchor)) {
           anchors.push($(ancestor_anchor).html(linkText).get(0));
       } else if (isTextChanged) {
         // Create a new link when text changed.
@@ -740,7 +740,7 @@ define([
     this.floatMe = function ($editable, value, $target) {
       beforeCommand($editable);
       // bootstrap
-      $target.removeClass('pull-left pull-right');
+      $target.removeClass('float-left float-right');
       if (value && value !== 'none') {
         $target.addClass('pull-' + value);
       }
@@ -760,7 +760,7 @@ define([
     this.imageShape = function ($editable, value, $target) {
       beforeCommand($editable);
 
-      $target.removeClass('img-rounded img-circle img-thumbnail');
+      $target.removeClass('rounded rounded-circle img-thumbnail');
 
       if (value) {
         $target.addClass(value);

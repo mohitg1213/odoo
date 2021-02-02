@@ -2,9 +2,10 @@ odoo.define('web.framework', function (require) {
 "use strict";
 
 var core = require('web.core');
-var crash_manager = require('web.crash_manager');
 var ajax = require('web.ajax');
 var Widget = require('web.Widget');
+var disableCrashManager = require('web.CrashManager').disable;
+const {sprintf} = require('web.utils')
 
 var _t = core._t;
 
@@ -52,6 +53,29 @@ if ($.blockUI) {
 }
 
 
+/**
+ * Remove the "accesskey" attributes to avoid the use of the access keys
+ * while the blockUI is enable.
+ */
+
+function blockAccessKeys() {
+    var elementWithAccessKey = [];
+    elementWithAccessKey = document.querySelectorAll('[accesskey]');
+    _.each(elementWithAccessKey, function (elem) {
+        elem.setAttribute("data-accesskey",elem.getAttribute('accesskey'));
+        elem.removeAttribute('accesskey');
+    });
+}
+
+function unblockAccessKeys() {
+    var elementWithDataAccessKey = [];
+    elementWithDataAccessKey = document.querySelectorAll('[data-accesskey]');
+    _.each(elementWithDataAccessKey, function (elem) {
+        elem.setAttribute('accesskey', elem.getAttribute('data-accesskey'));
+        elem.removeAttribute('data-accesskey');
+    });
+}
+
 var throbbers = [];
 
 function blockUI() {
@@ -59,12 +83,16 @@ function blockUI() {
     var throbber = new Throbber();
     throbbers.push(throbber);
     throbber.appendTo($(".oe_blockui_spin_container"));
+    $(document.body).addClass('o_ui_blocked');
+    blockAccessKeys();
     return tmp;
 }
 
 function unblockUI() {
     _.invoke(throbbers, 'destroy');
     throbbers = [];
+    $(document.body).removeClass('o_ui_blocked');
+    unblockAccessKeys();
     return $.unblockUI.apply($, arguments);
 }
 
@@ -74,7 +102,7 @@ function unblockUI() {
  */
 function redirect (url, wait) {
     // Dont display a dialog if some xmlhttprequest are in progress
-    crash_manager.disable();
+    disableCrashManager();
 
     var load = function() {
         var old = "" + window.location;
@@ -87,7 +115,7 @@ function redirect (url, wait) {
     };
 
     var wait_server = function() {
-        ajax.rpc("/web/webclient/version_info", {}).done(load).fail(function() {
+        ajax.rpc("/web/webclient/version_info", {}).then(load).guardedCatch(function () {
             setTimeout(wait_server, 250);
         });
     };
@@ -138,17 +166,6 @@ function Home (parent, action) {
 }
 core.action_registry.add("home", Home);
 
-/**
- * Client action to go back in breadcrumb history.
- * If can't go back in history stack, will go back to home.
- */
-function HistoryBack (parent) {
-    parent.history_back().fail(function () {
-        Home(parent);
-    });
-}
-core.action_registry.add("history_back", HistoryBack);
-
 function login() {
     redirect('/web/login');
 }
@@ -156,9 +173,28 @@ core.action_registry.add("login", login);
 
 function logout() {
     redirect('/web/session/logout');
-    return $.Deferred();
+    return new Promise();
 }
 core.action_registry.add("logout", logout);
+
+/**
+ * @param {ActionManager} parent
+ * @param {Object} action
+ * @param {Object} action.params notification params
+ * @see ServiceMixin.displayNotification
+ */
+function displayNotification(parent, action) {
+    let {title='', message='', links=[], type='info', sticky=false, next} = action.params || {};
+    links = links.map(({url, label}) => `<a href="${_.escape(url)}" target="_blank">${_.escape(label)}</a>`)
+    parent.displayNotification({
+        title: _.escape(title),
+        message: sprintf(_.escape(message), ...links),
+        type,
+        sticky
+    });
+    return next;
+}
+core.action_registry.add("display_notification", displayNotification);
 
 /**
  * Client action to refresh the session context (making sure

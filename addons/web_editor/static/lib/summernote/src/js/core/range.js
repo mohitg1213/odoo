@@ -455,7 +455,7 @@ define([
        */
       this.wrapBodyInlineWithPara = function () {
         if (dom.isBodyContainer(sc) && dom.isEmpty(sc)) {
-          sc.innerHTML = dom.emptyPara;
+          $(sc).html(dom.emptyPara);
           return new WrappedRange(sc.firstChild, 0, sc.firstChild, 0);
         }
 
@@ -660,9 +660,15 @@ define([
             var selection = document.getSelection();
             if (!selection || selection.rangeCount === 0) {
               return null;
-            } else if (dom.isBody(selection.anchorNode)) {
-              // Firefox: returns entire body as range on initialization. We won't never need it.
-              return null;
+            } else {
+              try {
+                if (dom.isBody(selection.anchorNode)) {
+                  // Firefox: returns entire body as range on initialization. We won't never need it.
+                  return null;
+                }
+              } catch (e) {
+                return null;
+              }
             }
   
             var nativeRng = selection.getRangeAt(0);
