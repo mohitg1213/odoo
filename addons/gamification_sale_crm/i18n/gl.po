@@ -3,14 +3,15 @@
 # * gamification_sale_crm
 #
 # Translators:
+# Martin Trigaux <mat@odoo.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 9.0\n"
+"Project-Id-Version: Odoo Server 10.saas~18\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-18 14:07+0000\n"
-"PO-Revision-Date: 2015-09-07 18:34+0000\n"
-"Last-Translator: Martin Trigaux\n"
-"Language-Team: Galician (http://www.transifex.com/odoo/odoo-9/language/gl/)\n"
+"POT-Creation-Date: 2026-08-28 17:42+0000\n"
+"PO-Revision-Date: 2017-09-20 09:53+0000\n"
+"Last-Translator: Martin Trigaux <mat@odoo.com>, 2017\n"
+"Language-Team: Galician (https://www.transifex.com/odoo/teams/41243/gl/)\n"
 "Language: gl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,13 +19,25 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: gamification_sale_crm
+#: model:ir.module.module,shortdesc:base.module_gamification_sale_crm
+msgid "CRM Gamification"
+msgstr ""
+
+#. module: gamification_sale_crm
 #: model:gamification.goal.definition,name:gamification_sale_crm.definition_crm_nbr_customer_refunds
-msgid "Customer Refunds"
-msgstr "Facturas rectificativas de cliente"
+msgid "Customer Credit Notes"
+msgstr ""
 
 #. module: gamification_sale_crm
 #: model:gamification.goal.definition,name:gamification_sale_crm.definition_crm_lead_delay_close
 msgid "Days to Close a Deal"
+msgstr ""
+
+#. module: gamification_sale_crm
+#: model:ir.module.module,description:base.module_gamification_sale_crm
+msgid ""
+"Example of goal definitions and challenges that can be used related to the "
+"usage of the CRM Sale module."
 msgstr ""
 
 #. module: gamification_sale_crm
@@ -64,7 +77,7 @@ msgstr ""
 
 #. module: gamification_sale_crm
 #: model:gamification.goal.definition,name:gamification_sale_crm.definition_crm_tot_customer_refunds
-msgid "Total Customer Refunds"
+msgid "Total Customer Credit Notes"
 msgstr ""
 
 #. module: gamification_sale_crm

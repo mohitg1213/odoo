@@ -1,93 +1,119 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+import re
 
-import ast
+from collections import OrderedDict
 
 from odoo import models
 from odoo.http import request
+from odoo.addons.website.tools import add_form_signature
 
 
-class QWeb(models.AbstractModel):
-    """ QWeb object for rendering stuff in the website context """
+re_background_image = re.compile(r"(background-image\s*:\s*url\(\s*['\"]?\s*)([^)'\"]+)")
+re_translate_span = re.compile(r'<span.+?data-oe-translation-source-sha.+?>(.+?)</span>')
+
+
+class IrQweb(models.AbstractModel):
+    """ IrQweb object for rendering stuff in the website context """
 
     _inherit = 'ir.qweb'
 
     URL_ATTRS = {
         'form': 'action',
         'a': 'href',
+        'link': 'href',
+        'script': 'src',
+        'img': 'src',
     }
 
-    CDN_TRIGGERS = {
-        'link':    'href',
-        'script':  'src',
-        'img':     'src',
-    }
+    def _compile_root(self, element, compile_context):
+        # Removes the attributes used by the "/website/snippet/filter_templates"
+        # controller and used only to be filtered without using irQweb rendering
+        if not self._is_static_node(element, compile_context):
+            for data_filter in [
+                    'data-number-of-elements', 'data-number-of-elements-sm',
+                    'data-number-of-elements-fetch', 'data-row-per-slide',
+                    'data-arrow-position', 'data-extra-classes',
+                    'data-extra-snippet-classes', 'data-container-classes',
+                    'data-content-classes', 'data-column-classes', 'data-thumb',
+                ]:
+                element.attrib.pop(data_filter, None)
+        return super()._compile_root(element, compile_context)
 
-    def _get_asset(self, xmlid, options, css=True, js=True, debug=False, async=False, values=None):
-        website = getattr(request, 'website', None) if request else None
-        if website and website.cdn_activated:
-            values = dict(values, url_for=website.get_cdn_url)
-        return super(QWeb, self)._get_asset(xmlid, options, css, js, debug, async, values)
+    def _get_template(self, template):
+        element, document, ref = super()._get_template(template)
+        if self.env.context.get('website_id'):
+            add_form_signature(element, self.sudo().env)
+        return element, document, ref
 
-    def _website_build_attribute(self, tagName, name, value, options, values):
-        """ Compute the value of an attribute while rendering the template. """
-        if name == self.URL_ATTRS.get(tagName) and values.get('url_for'):
-            return values.get('url_for')(value or '')
-        elif request and getattr(request, 'website', None) and request.website.cdn_activated and (name == self.URL_ATTRS.get(tagName) or name == self.CDN_TRIGGERS.get(tagName)):
-            return request.website.get_cdn_url(value or '')
-        return value
+    # assume cache will be invalidated by third party on write to ir.ui.view
+    def _get_template_cache_keys(self):
+        """ Return the list of context keys to use for caching ``_compile``. """
+        return super()._get_template_cache_keys() + ['website_id', 'cookies_allowed']
 
-    def _wrap_build_attributes(self, el, items, options):
-        """ Map items corresponding to URL and CDN attributes to an ast expression. """
-        if options.get('rendering_bundle'):
-            return items
+    def _pre_processing_att(self, attrib):
+        self._copy_translate_attributes(attrib)
+        super()._pre_processing_att(attrib)
 
-        url_att = self.URL_ATTRS.get(el.tag)
-        cdn_att = self.CDN_TRIGGERS.get(el.tag)
+    def _copy_translate_attributes(self, atts):
+        """
+        In translation mode, store `***.translate` attributes into a sibling
+        attribute `data-oe-translate-***`. This is necessary for attributes that
+        expect a value in a specific format (e.g. `src` which needs a URL) and
+        cannot keep the translation span (see `translate_func`) in the HTML
+        output. Other attributes can also take advantage of it.
+        """
+        if self.env.website and self.env.context.get('edit_translations'):
+            for att, value in list(atts.items()):
+                if att.endswith('.translate'):
+                    match = re.search(re_translate_span, value)
+                    if match:
+                        atts['data-oe-translate-{}'.format(att.removesuffix('.translate'))] = value
+                        atts[att] = match.group(1)
 
-        def process(item):
-            if isinstance(item, tuple) and (item[0] in (url_att, cdn_att)):
-                return (item[0], ast.Call(
-                    func=ast.Attribute(
-                        value=ast.Name(id='self', ctx=ast.Load()),
-                        attr='_website_build_attribute',
-                        ctx=ast.Load()
-                    ),
-                    args=[
-                        ast.Str(el.tag),
-                        ast.Str(item[0]),
-                        item[1],
-                        ast.Name(id='options', ctx=ast.Load()),
-                        ast.Name(id='values', ctx=ast.Load()),
-                    ], keywords=[],
-                    starargs=None, kwargs=None
-                ))
-            else:
-                return item
-
-        return [process(it) for it in items]
-
-    def _compile_static_attributes(self, el, options):
-        items = super(QWeb, self)._compile_static_attributes(el, options)
-        return self._wrap_build_attributes(el, items, options)
-
-    def _compile_dynamic_attributes(self, el, options):
-        items = super(QWeb, self)._compile_dynamic_attributes(el, options)
-        return self._wrap_build_attributes(el, items, options)
-
-    # method called by computing code
-
-    def _get_dynamic_att(self, tagName, atts, options, values):
-        atts = super(QWeb, self)._get_dynamic_att(tagName, atts, options, values)
-        if options.get('rendering_bundle'):
+    def _post_processing_att(self, tagName, atts):
+        if atts.get('data-no-post-process'):
             return atts
-        for name, value in atts.items():
-            atts[name] = self._website_build_attribute(tagName, name, value, options, values)
+
+        atts = super()._post_processing_att(tagName, atts)
+
+        website = self.env.website
+        if website and tagName == 'img' and 'loading' not in atts:
+            atts['loading'] = 'lazy'  # default is auto
+
+        if self.env.context.get('inherit_branding') or self.env.context.get('rendering_bundle') or \
+           self.env.context.get('edit_translations') or self.env.context.get('debug') or (request and request.session.debug):
+            return atts
+
+        if not website:
+            return atts
+
+        if website._should_remove_third_party_trackers():
+            website._remove_third_party_trackers(tagName, atts, ['domains', 'classes'])
+
+        name = self.URL_ATTRS.get(tagName)
+        if request:
+            value = atts.get(name) if name else None
+            if value not in (None, False, ()):
+                atts[name] = self.env['ir.http']._url_for(str(value))
+
+            # Adapt background-image URL in the same way as image src.
+            atts = self._adapt_style_background_image(atts, self.env['ir.http']._url_for)
+
+        if not website.cdn_activated:
+            return atts
+
+        data_name = f'data-{name}'
+        if name and (name in atts or data_name in atts):
+            atts = OrderedDict(atts)
+            if name in atts and atts[name] not in (False, None, ()):
+                atts[name] = website.get_cdn_url(atts[name])
+            if data_name in atts and atts[data_name] not in (False, None, ()):
+                atts[data_name] = website.get_cdn_url(atts[data_name])
+        atts = self._adapt_style_background_image(atts, website.get_cdn_url)
+
         return atts
 
-    def _is_static_node(self, el):
-        url_att = self.URL_ATTRS.get(el.tag)
-        cdn_att = self.CDN_TRIGGERS.get(el.tag)
-        return super(QWeb, self)._is_static_node(el) and \
-                (not url_att or not el.get(url_att)) and \
-                (not cdn_att or not el.get(cdn_att))
+    def _adapt_style_background_image(self, atts, url_adapter):
+        if isinstance(atts.get('style'), str) and 'background-image' in atts['style']:
+            atts['style'] = re_background_image.sub(lambda m: '%s%s' % (m[1], url_adapter(m[2])), atts['style'])
+        return atts
